@@ -1,10 +1,10 @@
-export type Words = {
+export type Challenge = {
   id: number;
   word: string;
   tip: string;
 };
 
-export const WORDS: Words[] = [
+export const WORDS: Challenge[] = [
   { id: 1, word: 'CSS', tip: 'Style language' },
   { id: 2, word: 'React', tip: 'Library to create web interfaces' },
   { id: 3, word: 'HTML', tip: 'Markup language' },
