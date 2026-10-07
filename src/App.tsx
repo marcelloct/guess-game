@@ -1,19 +1,19 @@
 import { WORDS, type Challenge } from './utils/words';
 
+import { useEffect, useState } from 'react';
 import { Header } from './components/Header';
 import { Tip } from './components/Tip';
 import { Letter } from './components/Letter';
 import { LettersUsed, type LettersUsedProps } from './components/LettersUsed';
 import { Input } from './components/Input';
 import { Button } from './components/Button';
-import styles from './app.module.css';
 
+import styles from './app.module.css';
 import './global.css';
-import { useEffect, useState } from 'react';
 
 export function App() {
   const [attempts, setAttempts] = useState(0);
-  const [letters, setLetters] = useState('');
+  const [letter, setLetter] = useState('');
   const [lettersUsed, setLettersUsed] = useState<LettersUsedProps[]>([]);
   const [challenge, setChallenge] = useState<Challenge | null>(null);
 
@@ -21,17 +21,36 @@ export function App() {
     alert('restart');
   }
 
+  function handleConfirm() {
+    if (!challenge) return;
+
+    if (!letter.trim()) return alert('Type a letter');
+
+    const value = letter.toUpperCase();
+    const exists = lettersUsed.find(
+      (letter) => letter.value.toUpperCase() === value
+    );
+
+    if (exists)
+      return (setLetter(''), alert(`You already choose the letter: ${value}`));
+
+    setLettersUsed((prevState) => [...prevState, { value, correct: false }]);
+
+    setLetter('');
+  }
+
   function startGame() {
     const index = Math.floor(Math.random() * WORDS.length);
     const randomWord = WORDS[index];
     setChallenge(randomWord);
     setAttempts(0);
-    setLetters('');
+    setLetter('');
   }
 
   useEffect(() => {
     startGame();
   }, []);
+
   if (!challenge) return;
 
   return (
@@ -48,8 +67,14 @@ export function App() {
 
         <h4>Guess:</h4>
         <div className={styles.flex}>
-          <Input autoFocus maxLength={1} placeholder="?" />
-          <Button content={'Confirm'} />
+          <Input
+            autoFocus
+            maxLength={1}
+            placeholder="?"
+            value={letter}
+            onChange={(e) => setLetter(e.target.value)}
+          />
+          <Button content={'Confirm'} onClick={handleConfirm} />
         </div>
 
         <LettersUsed data={lettersUsed} />
