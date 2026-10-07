@@ -12,6 +12,7 @@ import styles from './app.module.css';
 import './global.css';
 
 export function App() {
+  const [score, setScore] = useState(0);
   const [attempts, setAttempts] = useState(0);
   const [letter, setLetter] = useState('');
   const [lettersUsed, setLettersUsed] = useState<LettersUsedProps[]>([]);
@@ -34,8 +35,16 @@ export function App() {
     if (exists)
       return (setLetter(''), alert(`You already choose the letter: ${value}`));
 
-    setLettersUsed((prevState) => [...prevState, { value, correct: false }]);
+    const hits = challenge.word
+      .toUpperCase()
+      .split('')
+      .filter((char) => char === value).length;
 
+    const correct = hits > 0;
+    const currentScore = score + hits;
+
+    setLettersUsed((prevState) => [...prevState, { value, correct }]);
+    setScore(currentScore);
     setLetter('');
   }
 
@@ -57,7 +66,7 @@ export function App() {
     <div className={styles.container}>
       <main>
         <Header current={attempts} max={10} onRestart={handleRestart} />
-        <Tip tip={'hfbsafbasuby'} />
+        <Tip tip={challenge.tip} />
 
         <div className={styles.word}>
           {challenge.word.split('').map(() => (
