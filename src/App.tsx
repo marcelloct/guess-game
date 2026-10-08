@@ -13,12 +13,17 @@ import './global.css';
 
 export function App() {
   const [score, setScore] = useState(0);
+  const [rightLetters, setRightLetters] = useState(0);
   const [letter, setLetter] = useState('');
   const [lettersUsed, setLettersUsed] = useState<LettersUsedProps[]>([]);
   const [challenge, setChallenge] = useState<Challenge | null>(null);
 
+  const ATTEMPTS_MARGIN = 3;
+
   function handleRestart() {
-    alert('restart');
+    const isConfirmed = window.confirm('Restart the game?');
+
+    if (isConfirmed) startGame();
   }
 
   function handleConfirm() {
@@ -40,10 +45,10 @@ export function App() {
       .filter((char) => char === value).length;
 
     const correct = hits > 0;
-    const currentScore = score + hits;
+    const currentScore = rightLetters + hits;
 
     setLettersUsed((prevState) => [...prevState, { value, correct }]);
-    setScore(currentScore);
+    setRightLetters(currentScore);
     setLetter('');
   }
 
@@ -52,20 +57,49 @@ export function App() {
     const randomWord = WORDS[index];
     setChallenge(randomWord);
     setScore(0);
+    setRightLetters(0);
     setLetter('');
     setLettersUsed([]);
   }
 
-  useEffect(() => {
+  function endGame(message: string) {
+    alert(message);
     startGame();
+  }
+
+  useEffect(() => {
+    setTimeout(() => {
+      startGame();
+    });
   }, []);
+
+  useEffect(() => {
+    if (!challenge) return;
+
+    setTimeout(() => {
+      if (rightLetters === challenge.word.length) {
+        const incrementScore = score + 1;
+        setScore(incrementScore);
+        return endGame('You guess the word!');
+      }
+
+      const attemptsLimit = challenge.word.length + ATTEMPTS_MARGIN;
+      if (lettersUsed.length === attemptsLimit) {
+        return endGame("You didn't guess the word!");
+      }
+    }, 200);
+  }, [rightLetters, lettersUsed.length]);
 
   if (!challenge) return;
 
   return (
     <div className={styles.container}>
       <main>
-        <Header current={score} max={10} onRestart={handleRestart} />
+        <Header
+          current={lettersUsed.length}
+          max={challenge.word.length + ATTEMPTS_MARGIN}
+          onRestart={handleRestart}
+        />
         <Tip tip={challenge.tip} />
 
         <div className={styles.word}>
@@ -93,6 +127,7 @@ export function App() {
             onChange={(e) => setLetter(e.target.value)}
           />
           <Button content={'Confirm'} onClick={handleConfirm} />
+          {/* <span>Score: {score}</span> */}
         </div>
 
         <LettersUsed data={lettersUsed} />
